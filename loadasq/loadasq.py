@@ -70,6 +70,11 @@ class Options:
 def linkToScene(ob):
     if bpy.context.collection.objects.find(ob.name) < 0:
         bpy.context.collection.objects.link(ob)
+
+# **************************************************************************************
+def setParent(objects, parent):
+    for o in objects:
+        o.parent = parent
         
 # **************************************************************************************
 def internalPrint(message):
@@ -259,6 +264,7 @@ def buildBuilding(name, blenderBricks):
     parent = enclose(buildingBricks)
     parent.name = name
     linkToScene(parent)
+    setParent(buildingBricks, parent)
 
 
     if Options.magnification < 10:

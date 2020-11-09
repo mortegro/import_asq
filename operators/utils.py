@@ -112,6 +112,9 @@ def enclose(objects):
         dim = get_dimensions(objects)
         bpy.ops.mesh.primitive_cube_add(location=loc, scale=dim)
         enclosing = bpy.context.active_object
+        base = Vector((loc.x, loc.y, loc.z - dim.z/2))
+        bpy.context.scene.cursor.location = base
+        bpy.ops.object.origin_set(type='ORIGIN_CURSOR', center='MEDIAN')
         enclosing.hide_render = True
         enclosing.display_type = 'WIRE'
         enclosing.show_name = True
