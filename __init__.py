@@ -44,19 +44,28 @@ def menuImport(self, context):
 def register():
     """Register Menu Listing."""
     bpy.utils.register_class(importasq.ImportAsqOps)
-    bpy.utils.register_class(utils.anker_ct_save)
-    bpy.utils.register_class(utils.anker_ct_load)
-    bpy.utils.register_class(utils.anker_ct_top)
-    bpy.utils.register_class(utils.anker_ct_bottom)
+    bpy.utils.register_class(utils.OBJECT_OT_cursor_save)
+    bpy.utils.register_class(utils.OBJECT_OT_cursor_load)
+    bpy.utils.register_class(utils.OBJECT_OT_cursor_top)
+    bpy.utils.register_class(utils.OBJECT_OT_cursor_bottom)
+    bpy.utils.register_class(utils.OBJECT_OT_enclose_selected)
+    bpy.utils.register_class(utils.OBJECT_OT_cursor_center_children)
+    bpy.utils.register_class(utils.OBJECT_OT_setup_render)
+    bpy.utils.register_class(utils.OBJECT_OT_position_render_camera)
     bpy.types.TOPBAR_MT_file_import.append(menuImport)
 
 def unregister():
     """Unregister Menu Listing."""
     bpy.utils.unregister_class(importasq.ImportAsqOps)
-    bpy.utils.unregister_class(utils.anker_ct_save)
-    bpy.utils.unregister_class(utils.anker_ct_load)
-    bpy.utils.unregister_class(utils.anker_ct_top)
-    bpy.utils.unregister_class(utils.anker_ct_bottom)
+    bpy.utils.unregister_class(utils.OBJECT_OT_cursor_save)
+    bpy.utils.unregister_class(utils.OBJECT_OT_cursor_load)
+    bpy.utils.unregister_class(utils.OBJECT_OT_cursor_top)
+    bpy.utils.unregister_class(utils.OBJECT_OT_cursor_bottom)
+    bpy.utils.unregister_class(utils.OBJECT_OT_enclose_selected)
+    bpy.utils.unregister_class(utils.OBJECT_OT_cursor_center_children)
+    bpy.utils.unregister_class(utils.OBJECT_OT_setup_render)
+    bpy.utils.unregister_class(utils.OBJECT_OT_position_render_camera)
+
     bpy.types.TOPBAR_MT_file_import.remove(menuImport)
 
 if __name__ == "__main__":

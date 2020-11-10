@@ -124,10 +124,10 @@ class ImportAsqOps(bpy.types.Operator, ImportHelper):
         description="Material to use,  i.e. for Realism or Schematic look",
         default=prefs.get("materialLib", "realistic"),
         items=(
-            ("realistic", "Realistic", "Render to look realistic."),
-            ("texture", "Texture ", "Render to look realistic with image texture."),
             ("noise", "Noise ", "Render with noisy generated texture."),
             ("instruction", "Instruction", "Render to look like the instruction book pictures."),
+            ("realistic", "Realistic", "Render to look realistic."),
+            ("texture", "Texture ", "Render to look realistic with image texture."),
         )
     )
 

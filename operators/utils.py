@@ -1,10 +1,13 @@
 import bpy
-from mathutils import Vector
+from mathutils import Vector, Euler
+from bpy.props import StringProperty, FloatProperty, EnumProperty, BoolProperty
+import os
+import math
 
-class anker_ct_save(bpy.types.Operator):
-    """Store the cursor position (relative to the part)"""
-    bl_idname       = "anker.ct_save"
-    bl_label        = "Store relative Cursor"
+class OBJECT_OT_cursor_save(bpy.types.Operator):
+    """Save 3d Cursor Position relative to the part (relative to the part)"""
+    bl_idname       = "view3d.cursor_save"
+    bl_label        = "Save 3d Cursor Position"
     bl_options      = {'REGISTER'}
     
     def execute(self, context):
@@ -13,10 +16,10 @@ class anker_ct_save(bpy.types.Operator):
         ob['ct_delta'] = delta
         return {'FINISHED'}
 
-class anker_ct_load(bpy.types.Operator):
-    """Set the cursor position to the stored (relative to the part)"""
-    bl_idname       = "anker.ct_load"
-    bl_label        = "Set Cursor postion to stored (relative Cursor)"
+class OBJECT_OT_cursor_load(bpy.types.Operator):
+    """Move the 3d Cursor to the saved cursor position (relative to the part)"""
+    bl_idname       = "view3d.ct_load"
+    bl_label        = "Load 3d Cursor Position"
     bl_options      = {'REGISTER'}
 
     def execute(self, context):
@@ -26,10 +29,10 @@ class anker_ct_load(bpy.types.Operator):
             bpy.context.scene.cursor.location = rel
         return {'FINISHED'}
 
-class anker_ct_top(bpy.types.Operator):
-    """Set the cursor position to the stored XY and Z top"""
-    bl_idname       = "anker.ct_top"
-    bl_label        = "Set Cursor postion to the stored XY and Z top"
+class OBJECT_OT_cursor_top(bpy.types.Operator):
+    """Move the 3d Cursor to the saved cursor position and move it to Zmax(relative to the part)"""
+    bl_idname       = "view3d.ct_top"
+    bl_label        = "Load 3c Cursor move to Zmax"
     bl_options      = {'REGISTER'}
 
     def execute(self, context):
@@ -39,10 +42,10 @@ class anker_ct_top(bpy.types.Operator):
             bpy.context.scene.cursor.location = rel
         return {'FINISHED'}
 
-class anker_ct_bottom(bpy.types.Operator):
-    """Set the cursor position to the stored XY and Z bottom"""
-    bl_idname       = "anker.ct_bottom"
-    bl_label        = "Set Cursor postion to the stored XY and Z bottom"
+class OBJECT_OT_cursor_bottom(bpy.types.Operator):
+    """Move the 3d Cursor to the saved cursor position and move it to Zmin(relative to the part)"""
+    bl_idname       = "view3d.ct_bottom"
+    bl_label        = "Load 3c Cursor move to Zmin"
     bl_options      = {'REGISTER'}
 
     def execute(self, context):
@@ -52,24 +55,137 @@ class anker_ct_bottom(bpy.types.Operator):
             bpy.context.scene.cursor.location = rel
         return {'FINISHED'}
 
-class anker_ct_enclose(bpy.types.Operator):
-    """Enclose with Box"""
-    bl_idname       = "anker.enclose"
-    bl_label        = "construct an enclosing box"
-    bl_options      = {'REGISTER'}
+class OBJECT_OT_enclose_selected(bpy.types.Operator):
+    """Enclose all selected parts with a Box"""
+    bl_idname       = "view3d.enclose_selected"
+    bl_label        = "Enclose all selected objects with a box"
+    bl_options      = {'REGISTER', 'UNDO'}
+    name: StringProperty(
+        name="Name for the enclosing box",
+        default="Enclosing"
+    )
+    margin: FloatProperty(
+        name="margin around the enclosing box",
+        default=0
+    )
+
     def execute(self, context):
-        enclose(context.selected_objects)
+        enclose(context.selected_objects, self.name, self.margin)
         return {'FINISHED'}
 
-class anker_ct_center_children(bpy.types.Operator):
-    """Center children"""
-    bl_idname       = "anker.center_children"
+class OBJECT_OT_cursor_center_children(bpy.types.Operator):
+    """Center children relative to the parent object"""
+    bl_idname       = "view3d.center_children"
     bl_label        = "Center children to parent position"
     bl_options      = {'REGISTER'}
     def execute(self, context):
         parent = context.active_object
         center_relative(parent.children, parent)
         return {'FINISHED'}
+
+class OBJECT_OT_setup_render(bpy.types.Operator):
+    """Setup Render using presets"""
+    bl_idname       = "scene.setup_render"
+    bl_label        = "Setup Render using presets"
+    bl_options      = {'REGISTER', 'UNDO'}
+    preset: EnumProperty(
+        name="Render Setting",
+        default="REALISTIC_EEVEE",
+        items=(
+            ("REALISTIC_EEVEE", "Realistic Eevee", "Realistic Render settings using Eevee Renderer"),
+            ("REALISTIC_CYCLES", "Realistic Cycles", "Realistic Render settings using Cycles Renderer"),
+            ("INSTRUCTIONS_EEVEE", "Instructions Eevee", "Instructions Render settings using Eevee Renderer"),
+        )
+    )
+    environment: EnumProperty(
+        name="Environment Texture",
+        default="sunflowers_1k.hdr",
+        items=(
+            ("sunflowers_1k.hdr", "Sunflower", "Sunflower 1k from HDRI-Haven"),
+        )
+    )
+
+    setupCam: BoolProperty(
+        name="Setup a camera",
+        default=True
+    )
+    setupLighting: BoolProperty(
+        name="Setup a Lighting",
+        default=True
+    )
+
+    angleH: FloatProperty(
+        name="Horizontal camera angle (Z)",
+        default=45
+    )
+    angleV: FloatProperty(
+        name="Vertical camera angle (X)",
+        default=-15
+    )
+    def execute(self, context):
+        context.scene.render.film_transparent = True
+
+        if self.preset == "REALISTIC_EEVEE":
+            context.scene.render.engine = 'BLENDER_EEVEE'
+            context.scene.render.use_freestyle = False
+        elif self.preset == "REALISTIC_CYCLES":
+            context.scene.render.engine = 'BLENDER_EEVEE'
+            context.scene.render.use_freestyle = False
+        elif self.preset == "INSTRUCTIONS_EEVEE":
+            bpy.context.scene.render.engine = 'BLENDER_EEVEE'
+            context.scene.render.use_freestyle = True
+        
+        if self.setupLighting:
+            setupHDRI(self.environment)
+        
+        if self.setupCam:
+            cam = add_cam()
+            context.scene.camera = cam
+            position_cam(cam, self.angleH, self.angleV)
+        return {'FINISHED'}  
+
+class OBJECT_OT_position_render_camera(bpy.types.Operator):
+    """Setup a rendering camera"""
+    bl_idname       = "scene.position_render_camera"
+    bl_label        = "Set up camera"
+    bl_options      = {'REGISTER', 'UNDO'}
+    angleH: FloatProperty(
+        name="Horizontal camera angle (Z)",
+        default=45
+    )
+    angleV: FloatProperty(
+        name="Vertical camera angle (X)",
+        default=-15
+    )
+    def execute(self, context):
+        cam = add_cam()
+        context.scene.camera = cam
+        position_cam(cam, self.angleH, self.angleV)
+        return {'FINISHED'}  
+
+def setupHDRI(name):
+    path = os.path.join(os.path.dirname(__file__), "..", "images", "hdri", name)
+    world = bpy.context.scene.world
+    world.use_nodes = True
+    if not world.node_tree.nodes.get("ShaderNodeTexEnvironment"):
+        enode = world.node_tree.nodes.new("ShaderNodeTexEnvironment")
+        enode.image = bpy.data.images.load(path)
+        node_tree = world.node_tree
+        node_tree.links.new(enode.outputs['Color'], node_tree.nodes['Background'].inputs['Color'])
+
+def position_cam(cam, angleH=45, angleV=-15):
+    cam.rotation_euler = Euler((math.radians(90 + angleV), math.radians(0), math.radians(angleH)))
+    bpy.ops.view3d.camera_to_view_selected()
+
+
+def add_cam(name="RenderCam"):
+    if bpy.context.collection.objects.find(name) < 0:
+        cam = bpy.data.cameras.new(name)
+        cam_obj1 = bpy.data.objects.new(name, cam)
+        bpy.context.collection.objects.link(cam_obj1)
+        return cam_obj1
+    else:
+        return bpy.context.collection.objects.get(name)
 
 def column_func(vectors, column=0, func = min):
     els = [el[column] for el in vectors]
@@ -106,10 +222,11 @@ def get_dimensions(objects):
     res = max-min
     return res
 
-def enclose(objects):
+def enclose(objects, name="enclosing", margin=0):
     if objects:
         loc = get_center(objects)
         dim = get_dimensions(objects)
+        dim = dim + Vector((margin, margin, margin/2))
         bpy.ops.mesh.primitive_cube_add(location=loc, scale=dim)
         enclosing = bpy.context.active_object
         base = Vector((loc.x, loc.y, loc.z - dim.z/2))
@@ -118,6 +235,7 @@ def enclose(objects):
         enclosing.hide_render = True
         enclosing.display_type = 'WIRE'
         enclosing.show_name = True
+        enclosing.name = name
         return enclosing
 
 def center_relative(objects, relative_to_vector):

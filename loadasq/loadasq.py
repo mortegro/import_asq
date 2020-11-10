@@ -261,7 +261,7 @@ def buildBuilding(name, blenderBricks):
         center_relative(buildingBricks, bpy.context.scene.cursor.location)
 
     # Create Parent
-    parent = enclose(buildingBricks)
+    parent = enclose(buildingBricks, margin=2)
     parent.name = name
     linkToScene(parent)
     setParent(buildingBricks, parent)
