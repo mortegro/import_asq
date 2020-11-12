@@ -80,7 +80,7 @@ class OBJECT_OT_cursor_center_children(bpy.types.Operator):
     bl_options      = {'REGISTER'}
     def execute(self, context):
         parent = context.active_object
-        center_relative(parent.children, parent)
+        center_relative(parent.children, parent.location)
         return {'FINISHED'}
 
 class OBJECT_OT_setup_render(bpy.types.Operator):
@@ -231,9 +231,9 @@ def enclose(objects, name="enclosing", margin=0):
         loc = get_center(objects)
         dim = get_dimensions(objects)
         dim = dim + Vector((margin, margin, margin/2))
-        bpy.ops.mesh.primitive_cube_add(location=loc, scale=dim)
+        bpy.ops.mesh.primitive_cube_add(location=loc+Vector((0,0,margin/4)), scale=dim)
         enclosing = bpy.context.active_object
-        base = Vector((loc.x, loc.y, loc.z - dim.z/2))
+        base = Vector((loc.x, loc.y, loc.z - dim.z/2 + margin/4))
         bpy.context.scene.cursor.location = base
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR', center='MEDIAN')
         enclosing.hide_render = True

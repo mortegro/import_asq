@@ -60,7 +60,7 @@ class Options:
     addGaps            = False           # Introduces a tiny space between each brick
     gapAmount          = 0.1            # Percent
     clearScene         = False
-    center             = True
+    center             = False
     link               = False
     setupCam           = False
     angleH             = 45 
@@ -70,9 +70,6 @@ class Options:
     setupLighting      = True
     environment        = "sunflowers_1k.hdr"
     cameraMargin       = 2
-
-
-
     magnification      = 50
     scriptDirectory    = os.path.dirname( os.path.realpath(__file__) )
     verbose            = 1              # 1 = Show messages while working, 0 = Only show warnings/errors
@@ -281,7 +278,7 @@ def buildBuilding(name, blenderBricks):
         center_relative(buildingBricks, bpy.context.scene.cursor.location)
 
     # Create Parent
-    parent = enclose(buildingBricks, margin=Options.cameraMargin)
+    parent = enclose(buildingBricks, margin=Options.cameraMargin*Options.magnification)
     parent.name = name
     linkToScene(parent)
     setParent(buildingBricks, parent)

@@ -162,7 +162,7 @@ class ImportAsqOps(bpy.types.Operator, ImportHelper):
 
     cameraMargin: FloatProperty(
         name="Margin for Camera auto zoom",
-        default=prefs.get("cameraMargin", 2.0)
+        default=prefs.get("cameraMargin", 0.04)
     )
 
     angleH: FloatProperty(
