@@ -46,7 +46,7 @@ import sqlite3
 import bpy
 from mathutils import Matrix,Euler,Vector,Quaternion
 import bmesh
-from ..operators.utils import enclose, center_relative
+from ..operators.utils import enclose, center_relative, setupRendering, setupHDRI, position_cam, add_cam
 
 global linkedTemplateBricks
 linkedTemplateBricks=[]
@@ -57,10 +57,22 @@ class Options:
     """User Options"""
     stoneLib           = "realistic"    # "realistic", "instructions" Stones to use.
     materialLib        = "realistic"    # "realistic", "texture", "instructions" Material to use.
-    gaps               = True           # Introduces a tiny space between each brick
+    addGaps            = False           # Introduces a tiny space between each brick
+    gapAmount          = 0.1            # Percent
     clearScene         = False
     center             = True
     link               = False
+    setupCam           = False
+    angleH             = 45 
+    angleV             =-15
+    setupRendering     = True
+    preset             = "REALISTIC_EEVEE"
+    setupLighting      = True
+    environment        = "sunflowers_1k.hdr"
+    cameraMargin       = 2
+
+
+
     magnification      = 50
     scriptDirectory    = os.path.dirname( os.path.realpath(__file__) )
     verbose            = 1              # 1 = Show messages while working, 0 = Only show warnings/errors
@@ -203,12 +215,20 @@ def createBrickObjects(blenderBricklist):
             ob["ankerdata"] = template_ob["ankerdata"]
             ob["layer"] = s['layer']
             # Set rotation
-            ob.rotation_euler = (s['rx'], s['ry'], s['rz'])
+            rotation = (s['rx'], s['ry'], s['rz'])
+            ob.rotation_euler = rotation
             # Set location and scale
-            ob.location = (s['x']*fac, s['y']*fac, s['z']*fac)
+            location = (s['x']*fac, s['y']*fac, s['z']*fac)
+            ob.location = location
             # Set scale because library is 50x bigger
-            if fac != 50:
-                ob.scale=(fac/50,fac/50,fac/50)
+            scale = (fac/50,fac/50,fac/50)
+            ob.scale = scale
+            # Store InstanceData
+            ob["instancedata"] = {
+                "rotation": rotation,
+                "location": location,
+                "scale": scale
+            }
             # Assign material
             assignBrickMaterial(ob, s['material'], Options.materialLib)
             linkToScene(ob)
@@ -254,23 +274,35 @@ def buildBuilding(name, blenderBricks):
 
     # Create Building
     buildingBricks = createBrickObjects(blenderBricks )
-
     applyScaleAndRotation(buildingBricks)
 
+    # Center
     if Options.center:
         center_relative(buildingBricks, bpy.context.scene.cursor.location)
 
     # Create Parent
-    parent = enclose(buildingBricks, margin=2)
+    parent = enclose(buildingBricks, margin=Options.cameraMargin)
     parent.name = name
     linkToScene(parent)
     setParent(buildingBricks, parent)
 
-
+    # Setup File Units
     if Options.magnification < 10:
         bpy.context.scene.unit_settings.length_unit = 'CENTIMETERS'
     else:
         bpy.context.scene.unit_settings.length_unit = 'METERS'
+
+    # Setup Rendering
+        setupRendering(Options.preset)
+        
+    if Options.setupLighting:
+        setupHDRI(Options.environment)
+        
+    # Setup Camera
+    if Options.setupCam:
+        cam = add_cam()
+        bpy.context.scene.camera = cam
+        position_cam(cam, Options.angleH, Options.angleV)
 
     # Apply rotations
     #if not Options.link:

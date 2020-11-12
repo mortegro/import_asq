@@ -123,17 +123,8 @@ class OBJECT_OT_setup_render(bpy.types.Operator):
         default=-15
     )
     def execute(self, context):
-        context.scene.render.film_transparent = True
-
-        if self.preset == "REALISTIC_EEVEE":
-            context.scene.render.engine = 'BLENDER_EEVEE'
-            context.scene.render.use_freestyle = False
-        elif self.preset == "REALISTIC_CYCLES":
-            context.scene.render.engine = 'BLENDER_EEVEE'
-            context.scene.render.use_freestyle = False
-        elif self.preset == "INSTRUCTIONS_EEVEE":
-            bpy.context.scene.render.engine = 'BLENDER_EEVEE'
-            context.scene.render.use_freestyle = True
+        # Setup Rendering
+        setupRendering(self.preset)
         
         if self.setupLighting:
             setupHDRI(self.environment)
@@ -162,6 +153,19 @@ class OBJECT_OT_position_render_camera(bpy.types.Operator):
         context.scene.camera = cam
         position_cam(cam, self.angleH, self.angleV)
         return {'FINISHED'}  
+
+def setupRendering(preset):
+    bpy.context.scene.render.film_transparent = True
+    if preset == "REALISTIC_EEVEE":
+        bpy.context.scene.render.engine = 'BLENDER_EEVEE'
+        bpy.context.scene.render.use_freestyle = False
+    elif preset == "REALISTIC_CYCLES":
+        bpy.context.scene.render.engine = 'BLENDER_EEVEE'
+        bpy.context.scene.render.use_freestyle = False
+    elif preset == "INSTRUCTIONS_EEVEE":
+        bpy.context.scene.render.engine = 'BLENDER_EEVEE'
+        bpy.context.scene.render.use_freestyle = True
+
 
 def setupHDRI(name):
     path = os.path.join(os.path.dirname(__file__), "..", "images", "hdri", name)

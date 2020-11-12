@@ -31,7 +31,8 @@ import os
 import bpy
 from bpy.props import (StringProperty,
                        EnumProperty,
-                       BoolProperty
+                       BoolProperty,
+                       FloatProperty
                        )
 from bpy_extras.io_utils import ImportHelper
 from .loadasq import loadasq
@@ -110,17 +111,17 @@ class ImportAsqOps(bpy.types.Operator, ImportHelper):
     )
 
     stoneLib: EnumProperty(
-        name="Stone Library",
+        name="Stones",
         description="Used stone library i.e. for Realism or Schematic look",
         default=prefs.get("stoneLib", "realistic"),
         items=(
-            ("realistic", "Realistic Look", "Render to look realistic."),
-            ("instruction", "Instructions Look", "Render to look like the instruction book pictures."),
+            ("realistic", "Realistic Stones", "Anker Stones with realistic look."),
+            ("instruction", "Instructions Stones", "Anker Stones for Instructions (without bevel and carvings)."),
         )
     )
 
     materialLib: EnumProperty(
-        name="Stone Material",
+        name="Material",
         description="Material to use,  i.e. for Realism or Schematic look",
         default=prefs.get("materialLib", "realistic"),
         items=(
@@ -129,12 +130,6 @@ class ImportAsqOps(bpy.types.Operator, ImportHelper):
             ("realistic", "Realistic", "Render to look realistic."),
             ("texture", "Texture ", "Render to look realistic with image texture."),
         )
-    )
-
-    addGaps: BoolProperty(
-        name="Add space between each part:",
-        description="Add a small space between each part",
-        default=prefs.get("gaps", False)
     )
 
     magnification: EnumProperty(
@@ -147,16 +142,72 @@ class ImportAsqOps(bpy.types.Operator, ImportHelper):
         )
     )
 
+    addGaps: BoolProperty(
+        name="Add space between each part:",
+        description="Add a small space between each part",
+        default=prefs.get("addGaps", False)
+    )
+
+
     clearScene: BoolProperty(
         name="Clear Scene:",
         description="Clear Scene before import",
         default=prefs.get("clearScene", False)
     )
 
+    setupCam: BoolProperty(
+        name="Setup a camera",
+        default=prefs.get("setupCam", False)
+    )
+
+    cameraMargin: FloatProperty(
+        name="Margin for Camera auto zoom",
+        default=prefs.get("cameraMargin", 2.0)
+    )
+
+    angleH: FloatProperty(
+        name="Horizontal camera angle (Z)",
+        default=prefs.get("angleH", 45.0)
+    )
+    angleV: FloatProperty(
+        name="Vertical camera angle (X)",
+        default=prefs.get("angleV", -15.0)
+    )
+
+    setupRendering: BoolProperty(
+        name="Setup scene for Rendering",
+        default=prefs.get("setupRendering", True)
+    )
+
+    preset: EnumProperty(
+        name="Render Setting",
+        default=prefs.get("preset", "REALISTIC_EEVEE"),
+        items=(
+            ("REALISTIC_EEVEE", "Realistic Eevee", "Realistic Render settings using Eevee Renderer"),
+            ("REALISTIC_CYCLES", "Realistic Cycles", "Realistic Render settings using Cycles Renderer"),
+            ("INSTRUCTIONS_EEVEE", "Instructions Eevee", "Instructions Render settings using Eevee Renderer"),
+        )
+    )
+
+    setupLighting: BoolProperty(
+        name="Setup a Lighting",
+        default=prefs.get("setupLighting", True)
+    )
+
+    environment: EnumProperty(
+        name="Environment Texture",
+        default=prefs.get("environment", "sunflowers_1k.hdr"),
+        items=(
+            ("sunflowers_1k.hdr", "Sunflower", "Sunflower 1k from HDRI-Haven"),
+            ("abandoned_parking_1k.hdr", "Parking Lot", "Parking Lot 1k from HDRI-Haven"),
+            ("small_cathedral_02_1k.hdr", "Cathedral", "Cathedral 1k from HDRI-Haven"),
+        )
+    )
+
     link: BoolProperty(
         name="Link",
         description="Link Objects to library",
-        default=prefs.get("clearScene", True)
+        default=prefs.get("link", True)
     )
 
     def draw(self, context):
@@ -168,9 +219,17 @@ class ImportAsqOps(bpy.types.Operator, ImportHelper):
         box.prop(self, "stoneLib", expand=True)
         box.prop(self, "materialLib", expand=True)
         box.prop(self, "magnification", expand=True)
-        #box.prop(self, "link")
-        box.prop(self, "addGaps")
+        box.prop(self, "setupCam", expand=True)
+        box.prop(self, "cameraMargin", expand=True)
+        box.prop(self, "angleH", expand=True)
+        box.prop(self, "angleV", expand=True)
+        box.prop(self, "setupRendering", expand=True)
+        box.prop(self, "preset", expand=True)
+        box.prop(self, "setupLighting", expand=True)
+        box.prop(self, "environment", expand=False)
         box.prop(self, "clearScene")
+        #box.prop(self, "addGaps")
+        #box.prop(self, "link")
 
     def execute(self, context):
         """Start the import process."""
@@ -178,16 +237,33 @@ class ImportAsqOps(bpy.types.Operator, ImportHelper):
         ImportAsqOps.prefs.set("stoneLib",      self.stoneLib)
         ImportAsqOps.prefs.set("materialLib",   self.materialLib)
         ImportAsqOps.prefs.set("magnification", self.magnification)
-        ImportAsqOps.prefs.set("gaps",          self.addGaps)
-        #ImportAsqOps.prefs.set("link",          self.link)
+        ImportAsqOps.prefs.set("setupCam",      self.setupCam)
+        ImportAsqOps.prefs.set("cameraMargin",  self.cameraMargin)
+        ImportAsqOps.prefs.set("angleH",        self.angleH)
+        ImportAsqOps.prefs.set("angleV",        self.angleV)
+        ImportAsqOps.prefs.set("setupRendering",self.setupRendering)
+        ImportAsqOps.prefs.set("preset",        self.preset)
+        ImportAsqOps.prefs.set("setupLighting", self.setupLighting)
+        ImportAsqOps.prefs.set("environment",   self.environment)
         ImportAsqOps.prefs.set("clearScene",    self.clearScene)
+        #ImportAsqOps.prefs.set("addGaps",       self.addGaps)
+        #ImportAsqOps.prefs.set("link",          self.link)
         ImportAsqOps.prefs.save()
 
         # Set import options and import
         loadasq.Options.stoneLib                = self.stoneLib
         loadasq.Options.materialLib             = self.materialLib
         loadasq.Options.magnification           = int(self.magnification)
-        #loadasq.Options.link                    = self.link
+        loadasq.Options.setupCam                = self.setupCam
+        loadasq.Options.cameraMargin            = self.cameraMargin
+        loadasq.Options.angleH                  = self.angleH
+        loadasq.Options.angleV                  = self.angleV
+        loadasq.Options.setupRendering          = self.setupRendering
+        loadasq.Options.preset                  = self.preset
+        loadasq.Options.setupLighting           = self.setupLighting
+        loadasq.Options.environment             = self.environment
         loadasq.Options.clearScene              = self.clearScene
+        #loadasq.Options.addGaps                 = self.addGaps
+        #loadasq.Options.link                    = self.link
         loadasq.loadFromFile(self, self.filepath)
         return {'FINISHED'}
