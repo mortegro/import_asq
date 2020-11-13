@@ -8,12 +8,10 @@
 *Import ASQ* imports Buildings, created with AnkerPlan2 into Blender.
 It supports the **.asq** file format.
 
-
 ## Features ##
 + Available for both Blender 2.8+
 + Choose different Stone libraries (realistic, instruction)
 + Choose different materials (realistic, procedural, instructions)
-+ 
 
 ## Installation and usage ##
 
@@ -23,11 +21,11 @@ It supports the **.asq** file format.
 + Open Blender
 + Choose from the menu: Edit > Preferences
 + Click the *Add-ons* tab
-+ Click*Install...* button (Blender 2.81)
++ Click *Install...* button
 + Navigate to the zip file you downloaded and select it
-+ Find *Import LDraw* in the list of Add-ons (search for *LDraw* if necessary)
++ Find *Import ASQ* in the list of Add-ons (search for *ASQ* if necessary)
 + Tick the check mark next to it to activate the add-on.
-+ Click *Save Preferences* button (Blender 2.81) 
++ Click *Save Preferences* button
 
 ## History ##
 This plug-in is heavily inspired by the LDraw importer written by Toby Nelson (tobymnelson@gmail.com).

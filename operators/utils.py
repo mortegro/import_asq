@@ -228,13 +228,18 @@ def get_dimensions(objects):
 
 def enclose(objects, name="enclosing", margin=0):
     if objects:
+        # Get location and dimensions of objects
         loc = get_center(objects)
         dim = get_dimensions(objects)
-        dim = dim + Vector((margin, margin, margin/2))
-        bpy.ops.mesh.primitive_cube_add(location=loc+Vector((0,0,margin/4)), scale=dim)
+        # Calculate dimension and base of enclosure
+        full_dim = dim + Vector((margin, margin, margin/2))
+        base = Vector((loc.x, loc.y, loc.z - full_dim.z/2 + margin/4))
+        # Add Enclosing
+        bpy.ops.mesh.primitive_cube_add(location=loc+Vector((0,0,margin/4)), scale=full_dim)
         enclosing = bpy.context.active_object
-        base = Vector((loc.x, loc.y, loc.z - dim.z/2 + margin/4))
+        # Set Cursor to base
         bpy.context.scene.cursor.location = base
+        # Settings for enclosing
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR', center='MEDIAN')
         enclosing.hide_render = True
         enclosing.display_type = 'WIRE'

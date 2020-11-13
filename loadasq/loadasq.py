@@ -60,7 +60,7 @@ class Options:
     addGaps            = False           # Introduces a tiny space between each brick
     gapAmount          = 0.1            # Percent
     clearScene         = False
-    center             = False
+    center             = True
     link               = False
     setupCam           = False
     angleH             = 45 
