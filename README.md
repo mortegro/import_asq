@@ -17,7 +17,7 @@ It supports the **.asq** file format.
 
 **Installing the add-in**
 
-+ Download the latest version from the [Releases](https://github.com/mortegro/BlenderImportAsq/releases) page
++ Download the latest version from the [Releases](https://github.com/mortegro/import_asq/releases) page
 + Open Blender
 + Choose from the menu: Edit > Preferences
 + Click the *Add-ons* tab
