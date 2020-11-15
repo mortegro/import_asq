@@ -155,7 +155,6 @@ class OBJECT_OT_position_render_camera(bpy.types.Operator):
         return {'FINISHED'}  
 
 def setupRendering(preset):
-    bpy.context.scene.render.film_transparent = True
     if preset == "REALISTIC_EEVEE":
         bpy.context.scene.render.engine = 'BLENDER_EEVEE'
         bpy.context.scene.render.use_freestyle = False
@@ -165,6 +164,7 @@ def setupRendering(preset):
     elif preset == "INSTRUCTIONS_EEVEE":
         bpy.context.scene.render.engine = 'BLENDER_EEVEE'
         bpy.context.scene.render.use_freestyle = True
+    bpy.context.scene.render.film_transparent = True
 
 
 def setupHDRI(name):
@@ -176,6 +176,8 @@ def setupHDRI(name):
         enode.image = bpy.data.images.load(path)
         node_tree = world.node_tree
         node_tree.links.new(enode.outputs['Color'], node_tree.nodes['Background'].inputs['Color'])
+    bpy.context.scene.render.film_transparent = True
+
 
 def position_cam(cam, angleH=45, angleV=-15):
     cam.rotation_euler = Euler((math.radians(90 + angleV), math.radians(0), math.radians(angleH)))

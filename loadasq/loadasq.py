@@ -74,6 +74,7 @@ class Options:
     scriptDirectory    = os.path.dirname( os.path.realpath(__file__) )
     verbose            = 1              # 1 = Show messages while working, 0 = Only show warnings/errors
     nks                = 6
+    applyScale         = False
 
 # **************************************************************************************
 def linkToScene(ob):
@@ -200,7 +201,7 @@ def apply_rotation(ob):
 def createBrickObjects(blenderBricklist):
     global linkedTemplateBricks
     buildingBricks = []
-    fac = Options.magnification
+    fac = int(Options.magnification)
 
     for s in blenderBricklist:
         templateName = "{0}_{1}".format(s['shapeId'], Options.stoneLib)
@@ -245,9 +246,9 @@ def selectAll(objects):
         ob.select_set(True)
 
 # **************************************************************************************
-def applyScaleAndRotation(objects):
+def applyScaleAndRotation(objects, scale=True):
     selectAll(objects)
-    bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=scale)
     deselectAll()
 
 # **************************************************************************************
@@ -271,20 +272,20 @@ def buildBuilding(name, blenderBricks):
 
     # Create Building
     buildingBricks = createBrickObjects(blenderBricks )
-    applyScaleAndRotation(buildingBricks)
+    applyScaleAndRotation(buildingBricks, scale=Options.applyScale)
 
     # Center
     if Options.center:
         center_relative(buildingBricks, bpy.context.scene.cursor.location)
 
     # Create Parent
-    parent = enclose(buildingBricks, margin=Options.cameraMargin*Options.magnification)
+    parent = enclose(buildingBricks, margin=Options.cameraMargin*int(Options.magnification))
     parent.name = name
     linkToScene(parent)
     setParent(buildingBricks, parent)
 
     # Setup File Units
-    if Options.magnification < 10:
+    if int(Options.magnification) < 10:
         bpy.context.scene.unit_settings.length_unit = 'CENTIMETERS'
     else:
         bpy.context.scene.unit_settings.length_unit = 'METERS'

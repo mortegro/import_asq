@@ -253,7 +253,7 @@ class ImportAsqOps(bpy.types.Operator, ImportHelper):
         # Set import options and import
         loadasq.Options.stoneLib                = self.stoneLib
         loadasq.Options.materialLib             = self.materialLib
-        loadasq.Options.magnification           = int(self.magnification)
+        loadasq.Options.magnification           = self.magnification
         loadasq.Options.setupCam                = self.setupCam
         loadasq.Options.cameraMargin            = self.cameraMargin
         loadasq.Options.angleH                  = self.angleH
