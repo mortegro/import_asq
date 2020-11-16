@@ -52,7 +52,10 @@ def register():
     bpy.utils.register_class(utils.OBJECT_OT_cursor_center_children)
     bpy.utils.register_class(utils.OBJECT_OT_setup_render)
     bpy.utils.register_class(utils.OBJECT_OT_position_render_camera)
+    bpy.utils.register_class(utils.OBJECT_OT_show_layer)
+    bpy.utils.register_class(utils.OBJECT_OT_show_all_layers)
     bpy.types.TOPBAR_MT_file_import.append(menuImport)
+
 
 def unregister():
     """Unregister Menu Listing."""
@@ -65,7 +68,8 @@ def unregister():
     bpy.utils.unregister_class(utils.OBJECT_OT_cursor_center_children)
     bpy.utils.unregister_class(utils.OBJECT_OT_setup_render)
     bpy.utils.unregister_class(utils.OBJECT_OT_position_render_camera)
-
+    bpy.utils.unregister_class(utils.OBJECT_OT_show_layer)
+    bpy.utils.unregister_class(utils.OBJECT_OT_show_all_layers)
     bpy.types.TOPBAR_MT_file_import.remove(menuImport)
 
 if __name__ == "__main__":

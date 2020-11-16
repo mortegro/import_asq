@@ -1,6 +1,6 @@
 import bpy
 from mathutils import Vector, Euler
-from bpy.props import StringProperty, FloatProperty, EnumProperty, BoolProperty
+from bpy.props import StringProperty, FloatProperty, EnumProperty, BoolProperty, IntProperty
 import os
 import math
 
@@ -153,6 +153,38 @@ class OBJECT_OT_position_render_camera(bpy.types.Operator):
         context.scene.camera = cam
         position_cam(cam, self.angleH, self.angleV)
         return {'FINISHED'}  
+
+class OBJECT_OT_show_layer(bpy.types.Operator):
+    """Show only a Layer of the building"""
+    bl_idname       = "view3d.show_anker_layer"
+    bl_label        = "Show only a Layer of the building"
+    bl_options      = {'REGISTER', 'UNDO'}
+    layer: IntProperty(
+        name="Layer",
+        default=1
+    )
+    showWireframe: BoolProperty(
+        name="Show Wireframe of other layers",
+        default=False
+    )
+    def execute(self, context):
+        for o in context.scene.objects:
+            if o.get('layer') and int(o.get('layer')) == self.layer:
+                o.hide_set(False)
+            else:
+                o.hide_set(True)
+        return {'FINISHED'}  
+
+class OBJECT_OT_show_all_layers(bpy.types.Operator):
+    """Show all Layers of the building"""
+    bl_idname       = "view3d.show_all_anker_layers"
+    bl_label        = "Show all Layers of the building"
+    bl_options      = {'REGISTER', 'UNDO'}
+    def execute(self, context):
+        for o in context.scene.objects:
+            o.hide_set(False)
+        return {'FINISHED'}  
+
 
 def setupRendering(preset):
     if preset == "REALISTIC_EEVEE":

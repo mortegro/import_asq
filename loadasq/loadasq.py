@@ -225,7 +225,8 @@ def createBrickObjects(blenderBricklist):
             ob["instancedata"] = {
                 "rotation": rotation,
                 "location": location,
-                "scale": scale
+                "scale": scale,
+                "material": s['material']
             }
             # Assign material
             assignBrickMaterial(ob, s['material'], Options.materialLib)
